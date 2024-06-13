@@ -12,13 +12,13 @@ height = 256 # Enter the image size of the model.
 width  = 256 # Enter the image size of the model.
 channels = 3 # Number of image channels
 
-train_number = 2879 # Randomly assign the number of images for generating the training set.
-val_number = 0   # Randomly assign the number of images for generating the validation set.
-test_number = 614  # Randomly assign the number of images for generating the test set.
-Dataset_add = './TN3K/'
+train_number = 966  # Randomly assign the number of images for generating the training set.
+val_number = 276   # Randomly assign the number of images for generating the validation set.
+test_number = 139  # Randomly assign the number of images for generating the test set.
+Dataset_add = './TNUI-2021-/thyroid_data/'
 Tr_add = 'train/images'
 
-Tr_list = glob.glob(Dataset_add+ Tr_add+'/*.jpg')
+Tr_list = glob.glob(Dataset_add+ Tr_add+'/*.png')
 
 # It contains 2000 training samples
 Data_train_2017    = np.zeros([train_number, height, width, channels])
@@ -32,10 +32,13 @@ for idx in range(len(Tr_list)):
     img = np.double(sc.imresize(img, [height, width, channels], interp='bilinear', mode = 'RGB'))
     Data_train_2017[idx, :,:,:] = img
 
-    b = Tr_list[idx]   
-    a = b[0:13]
-    b = b.split('.')[1].split('/')[4]
-    add = (a+ 'masks/' + b +'.jpg')    
+    b = Tr_list[idx] 
+    #print('b:',b)
+    a = b[0:32]
+    #print('a:',a)
+    b = b.split('.')[1].split('/')[5]
+    #print('b2:',b)
+    add = (a+ 'masks/' + b +'.png')    
     img2 = sc.imread(add)
     img2 = np.double(sc.imresize(img2, [height, width], interp='bilinear'))
     Label_train_2017[idx, :,:] = img2    
@@ -49,7 +52,7 @@ print('Reading TN3K Training finished')
 #############################################################################
 Val_add = 'val/images'
 
-Val_list = glob.glob(Dataset_add+ Val_add+'/*.jpg')
+Val_list = glob.glob(Dataset_add+ Val_add+'/*.png')
 
 # It contains 150 Validation samples
 Data_val_2017    = np.zeros([val_number, height, width, channels])
@@ -64,9 +67,9 @@ for idx in range(len(Val_list)):
     Data_val_2017[idx, :,:,:] = img
 
     b = Val_list[idx]    
-    a = b[0:len(Dataset_add)]
-    b = b.split('.')[1].split('/')[4] 
-    add = (a+ 'masks/' + b +'.jpg')    
+    a = b[0:30]
+    b = b.split('.')[1].split('/')[5] 
+    add = (a+ 'masks/' + b +'.png')    
     img2 = sc.imread(add)
     img2 = np.double(sc.imresize(img2, [height, width], interp='bilinear'))
     Label_val_2017[idx, :,:] = img2    
@@ -82,7 +85,7 @@ print('Reading ISIC 2017 Validation finished')
 
 Test_add = 'test/images'
 
-Test_list = glob.glob(Dataset_add+ Test_add+'/*.jpg')
+Test_list = glob.glob(Dataset_add+ Test_add+'/*.png')
 
 # It contains 600 test samples
 Data_test_2017    = np.zeros([test_number, height, width, channels])
@@ -97,9 +100,9 @@ for idx in range(len(Test_list)):
     Data_test_2017[idx, :,:,:] = img
 
     b = Test_list[idx]    
-    a = b[0:12]
-    b = b.split('.')[1].split('/')[4] 
-    add = (a+ 'masks/' + b +'.jpg')    
+    a = b[0:31]
+    b = b.split('.')[1].split('/')[5] 
+    add = (a+ 'masks/' + b +'.png')    
     img2 = sc.imread(add)
     img2 = np.double(sc.imresize(img2, [height, width], interp='bilinear'))
     Label_test_2017[idx, :,:] = img2    
