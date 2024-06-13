@@ -8,7 +8,7 @@ from models.LightMUNet import LightMUNet
 from models.UltraLight_VM_UNet import UltraLight_VM_UNet
 from models.HNet import H_Net_137
 from models.HMamba.MHNet import H_Net
-from models.HMamba_1.MHNet import H_Net_1
+from models.MDNet.DMNet import H_Net_1
 from models.HMamba_skip.MHNet import H_Net_skip
 from models.fcn import FCN8s
 from models.unet import Unet
@@ -100,8 +100,8 @@ def main(config):
         model = FCN8s(1)
     elif model_name == 'HNet':
         model = H_Net_137(3,1)
-    elif model_name == 'HNet1':
-        model = H_Net(3,1)
+    elif model_name == 'DMNet':
+        model = DMNet(3,1)
     elif model_name == 'HNet2':
         model = H_Net_1(3,1)
     elif model_name == 'unet':
