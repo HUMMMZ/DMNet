@@ -8,7 +8,7 @@ from models.LightMUNet import LightMUNet
 from models.UltraLight_VM_UNet import UltraLight_VM_UNet
 from models.HNet import H_Net_137
 from models.HMamba.MHNet import H_Net
-from models.MDNet.DMNet import H_Net_1
+from models.MDNet.DMNet import DMNet
 from models.HMamba_skip.MHNet import H_Net_skip
 from models.fcn import FCN8s
 from models.unet import Unet
