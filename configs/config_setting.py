@@ -9,7 +9,7 @@ class setting_config:
     """
     # network: UltraLight_VM_UNet, VMUNet, fcn, HNetskip
     #          HNet, trfe, unet, MDNet, HNet2, RNNet
-    network = 'HNet1'
+    network = 'MDNet'
     # datasets: TN3K, TNUI
     datasets = 'TN3K'
     # BceDiceLoss, DiceLoss, BCELoss, SmooothL1_BceDiceLoss
