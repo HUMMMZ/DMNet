@@ -13,14 +13,14 @@ nonlinearity = partial(F.relu, inplace=True)
 BN_EPS = 1e-4  #1e-4  #1e-5
 
 
-class H_Net_1(nn.Module):
+class H_Net_skip(nn.Module):
     def __init__(self,  in_ch, out_ch, bn=True, BatchNorm=False):
-        super(H_Net_1, self).__init__()
+        super(H_Net_skip, self).__init__()
 
         # mutli-scale simple convolution
         self.conv2 = M_Conv(3, 64, kernel_size=3, bn=bn, BatchNorm=BatchNorm)
-        self.conv3 = M_Conv(3, 128, kernel_size=3, bn=bn, BatchNorm=BatchNorm)
-        self.conv4 = M_Conv(3, 256, kernel_size=3, bn=bn, BatchNorm=BatchNorm)
+        self.conv3 = M_Conv(3, 64, kernel_size=3, bn=bn, BatchNorm=BatchNorm)
+        self.conv4 = M_Conv(3, 128, kernel_size=3, bn=bn, BatchNorm=BatchNorm)
 
         # the down convolution contain concat operation
         self.down1 = M_Encoder(in_ch, 32, kernel_size=3, bn=bn, BatchNorm=BatchNorm)  # 512
@@ -92,47 +92,53 @@ class H_Net_1(nn.Module):
         self.finalconv2 = nn.Conv2d(32, 32, 3, padding=1)
         self.finalrelu2 = nonlinearity
         self.finalconv3 = nn.Conv2d(32, out_ch, 3, padding=1)
-        
-        
+               
         # the encoder of Left_VSSBlock
         
-
-
     def forward(self, x):
 
         # L-Encoder Part
         l_x = x                     #[3, 256, 256]
-        out1 = self.down1(l_x) # conv1 [32,256,256]        
-        out4, skip_list = self.down2(out1) # conv2 [64,128,128]
-        out1 = skip_list[0]
-        out2 = self.d2_conv(skip_list[1])    #torch.Size([16, 128, 64, 64])
-        out3 = self.d3_conv(skip_list[2])    #torch.Size([16, 256, 32, 32])
-        out4 = self.d4_conv(out4.permute(0, 3, 1, 2))    #torch.Size([16, 512, 16, 16])
+        _, _, img_shape, _ = l_x.size()
+        out0 = self.down1(l_x) # conv1 [32,256,256]
+        x_2 = F.upsample(l_x, size=(int(img_shape / 2), int(img_shape / 2)), mode='bilinear')
+        x_3 = F.upsample(l_x, size=(int(img_shape / 4), int(img_shape / 4)), mode='bilinear')
+        x_4 = F.upsample(l_x, size=(int(img_shape / 8), int(img_shape / 8)), mode='bilinear')        
+        out4, skip_list = self.down2(out0) # conv2 
+        out1 = skip_list[0]                 # [64,128,128]
+        #print(out1.shape, x_2.shape)
+        out1 = out1 + self.conv2(x_2)
+        out2 = self.d2_conv(skip_list[1])    #[128, 64, 64]-->[64, 64, 64]
+        out2 = out2 + self.conv3(x_3)
+        out3 = self.d3_conv(skip_list[2])    #[256, 32, 32]-->[128, 32, 32]
+        out3 = out3 + self.conv4(x_4)
+        out4 = self.d4_conv(out4.permute(0, 3, 1, 2))    #[512, 16, 16]-->[256, 16, 16]
 
         # R-Encoder part
         rx = x                      #[3, 256, 256]
         e0 = self.firstconv(rx)     #[64,128,128]
         e0 = self.firstbn(e0)       #[64,128,128]
-        e0 = self.firstrelu(e0)     #[64,128,128]
-        pe0 = self.firstmaxpool(e0) #[64,64,64]
-        e1 = self.encoder1(pe0)     #[64,64,64]
-        e2 = self.encoder2(e1)      #[128,32,32]
-        e3 = self.encoder3(e2)      #[256,16,16]
-        e4 = self.encoder4(e3)      #[512,8,8]
+        e0 = self.firstrelu(e0)     #[64, 128, 128]
+        pe0 = self.firstmaxpool(e0) #[64, 64, 64]
+        e1 = self.encoder1(pe0)     #[64, 64, 64]
+        e2 = self.encoder2(e1)      #[128, 32, 32]
+        e3 = self.encoder3(e2)      #[256, 16, 16]
+        e4 = self.encoder4(e3)      #[512, 8, 8]
 
         # Center of CE_Net
-        # e4 = self.CAC_Ce(e4)
+        e4 = self.CAC_Ce(e4)        #[512, 8, 8]
         # e4 = self.dblock(e4)
-        e4 = self.spp(e4)
+        e4 = self.spp(e4)        #[512, 8, 8]
         # the center part
-        e4_up = self.e4_up(e4)
-        #CAC_out = self.CAC(out4)
-        #CAC_out = e4_up + CAC_out
-        CAC_out = e4_up + out4
-        #cet_out = self.CAC_conv4(CAC_out)
-        r1_cat = torch.cat([e3, CAC_out], dim=1)
-        up_out = self.rc_up1(r1_cat)
-        up5 = self.up5(up_out)
+        e4_up = self.e4_up(e4)     #[256, 16, 16]
+        CAC_out = self.CAC(out4)   #[256, 16, 16]
+        #print(CAC_out.shape)
+        CAC_out = e4_up + CAC_out    #[256, 16, 16]
+        cet_out = self.CAC_conv4(CAC_out)   #[256, 16, 16]
+        r1_cat = torch.cat([e3, cet_out], dim=1)   #[512, 16, 16]
+        up_out = self.rc_up1(r1_cat)      #[256, 32, 32]
+        up5 = self.up5(up_out)      #[128, 32, 32]
+        #print('3:',up5.shape)
         r2_cat = torch.cat([e2, up5], dim=1)
         up_out1 = self.rc_up2(r2_cat)
         up6 = self.up6(up_out1)

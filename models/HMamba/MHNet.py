@@ -13,9 +13,9 @@ nonlinearity = partial(F.relu, inplace=True)
 BN_EPS = 1e-4  #1e-4  #1e-5
 
 
-class H_Net_1(nn.Module):
+class H_Net(nn.Module):
     def __init__(self,  in_ch, out_ch, bn=True, BatchNorm=False):
-        super(H_Net_1, self).__init__()
+        super(H_Net, self).__init__()
 
         # mutli-scale simple convolution
         self.conv2 = M_Conv(3, 64, kernel_size=3, bn=bn, BatchNorm=BatchNorm)
@@ -24,12 +24,19 @@ class H_Net_1(nn.Module):
 
         # the down convolution contain concat operation
         self.down1 = M_Encoder(in_ch, 32, kernel_size=3, bn=bn, BatchNorm=BatchNorm)  # 512
+        #self.down2 = M_Encoder(64 + 32, 64, kernel_size=3, bn=bn, BatchNorm=BatchNorm)  # 256
+        #self.down3 = M_Encoder(128 + 64, 128, kernel_size=3, bn=bn, BatchNorm=BatchNorm)  # 128
+        #self.down4 = M_Encoder(256 + 128, 256, kernel_size=3, bn=bn, BatchNorm=BatchNorm)  # 64
+        #self.conv1 = M_Conv(3, 32, kernel_size=3, bn=bn, BatchNorm=BatchNorm)
         self.down2 = VSSM(in_chans=32,
                            num_classes=1,
                            depths=[2,2,2,2],
                            depths_decoder=[2,2,2,1],
                            drop_path_rate=0.2,
                         )  # 512
+        #self.down2 = VSSM(64)  # 256
+        #self.down3 = VSSM(128)  # 128
+        #self.down4 = VSSM(256)  # 64
 
         # ce_net encoder part
         filters = [64, 128, 256, 512]
@@ -102,37 +109,39 @@ class H_Net_1(nn.Module):
 
         # L-Encoder Part
         l_x = x                     #[3, 256, 256]
-        out1 = self.down1(l_x) # conv1 [32,256,256]        
-        out4, skip_list = self.down2(out1) # conv2 [64,128,128]
+        out0 = self.down1(l_x) # conv1 [32,256,256]        
+        out4, skip_list = self.down2(out0) # conv2 [64,128,128]
         out1 = skip_list[0]
-        out2 = self.d2_conv(skip_list[1])    #torch.Size([16, 128, 64, 64])
-        out3 = self.d3_conv(skip_list[2])    #torch.Size([16, 256, 32, 32])
-        out4 = self.d4_conv(out4.permute(0, 3, 1, 2))    #torch.Size([16, 512, 16, 16])
+        out2 = self.d2_conv(skip_list[1])    #[128, 64, 64]-->[64, 64, 64]
+        out3 = self.d3_conv(skip_list[2])    #[256, 32, 32]-->[128, 32, 32]
+        out4 = self.d4_conv(out4.permute(0, 3, 1, 2))    #[512, 16, 16]-->[256, 16, 16]
 
         # R-Encoder part
         rx = x                      #[3, 256, 256]
         e0 = self.firstconv(rx)     #[64,128,128]
         e0 = self.firstbn(e0)       #[64,128,128]
-        e0 = self.firstrelu(e0)     #[64,128,128]
-        pe0 = self.firstmaxpool(e0) #[64,64,64]
-        e1 = self.encoder1(pe0)     #[64,64,64]
-        e2 = self.encoder2(e1)      #[128,32,32]
-        e3 = self.encoder3(e2)      #[256,16,16]
-        e4 = self.encoder4(e3)      #[512,8,8]
+        e0 = self.firstrelu(e0)     #[64, 128, 128]
+        pe0 = self.firstmaxpool(e0) #[64, 64, 64]
+        e1 = self.encoder1(pe0)     #[64, 64, 64]
+        e2 = self.encoder2(e1)      #[128, 32, 32]
+        e3 = self.encoder3(e2)      #[256, 16, 16]
+        e4 = self.encoder4(e3)      #[512, 8, 8]
+        #print(e0.shape, pe0.shape, e1.shape, e2.shape, e3.shape, e4.shape)
 
         # Center of CE_Net
-        # e4 = self.CAC_Ce(e4)
+        e4 = self.CAC_Ce(e4)        #[512, 8, 8]
         # e4 = self.dblock(e4)
-        e4 = self.spp(e4)
+        e4 = self.spp(e4)        #[512, 8, 8]
         # the center part
-        e4_up = self.e4_up(e4)
-        #CAC_out = self.CAC(out4)
-        #CAC_out = e4_up + CAC_out
-        CAC_out = e4_up + out4
-        #cet_out = self.CAC_conv4(CAC_out)
-        r1_cat = torch.cat([e3, CAC_out], dim=1)
-        up_out = self.rc_up1(r1_cat)
-        up5 = self.up5(up_out)
+        e4_up = self.e4_up(e4)     #[256, 16, 16]
+        CAC_out = self.CAC(out4)   #[256, 16, 16]
+        #print(CAC_out.shape)
+        CAC_out = e4_up + CAC_out    #[256, 16, 16]
+        cet_out = self.CAC_conv4(CAC_out)   #[256, 16, 16]
+        r1_cat = torch.cat([e3, cet_out], dim=1)   #[512, 16, 16]
+        up_out = self.rc_up1(r1_cat)      #[256, 32, 32]
+        up5 = self.up5(up_out)      #[128, 32, 32]
+        #print('3:',up5.shape)
         r2_cat = torch.cat([e2, up5], dim=1)
         up_out1 = self.rc_up2(r2_cat)
         up6 = self.up6(up_out1)
