@@ -65,7 +65,8 @@ python test-for.py
 - After testing, you could obtain the outputs in './results/' </br>
 
 **3. Model Download.**
-Download the pre-trained model from [this](https://github.com/haifangong/TRFE-Net-for-thyroid-nodule-segmentation/tree/main/picture) link and store it inside the `/results/`. </br>
+Download the pre-trained model from [this](https://pan.quark.cn/s/7933a79858b8) link and store it inside the `/results/`. </br>
+PAyf </br>
 
 ## Acknowledgement
 Thanks to [Vim](https://github.com/hustvl/Vim), [VMamba](https://github.com/MzeroMiko/VMamba), [VM-UNet](https://github.com/JCruan519/VM-UNet) and [LightM-UNet](https://github.com/MrBlankness/LightM-UNet) for their outstanding work.
