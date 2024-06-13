@@ -38,7 +38,7 @@ pip install pillow
 2. Run `Prepare_TNUI.py` for data preparation and dividing data to train, validation and test sets. </br>
 
 
-*D. Prepare your own dataset* </br>
+*C. Prepare your own dataset* </br>
 1. The file format reference is as follows. (The image is a 24-bit png image. The mask is an 8-bit png image. (0 pixel dots for background, 255 pixel dots for target))
 - './your_dataset/'
   - images
@@ -63,6 +63,9 @@ First, in the test.py file, you should change the address of the checkpoint in '
 python test-for.py
 ```
 - After testing, you could obtain the outputs in './results/' </br>
+
+**3. Model Download.**
+Download the pre-trained model from [this](https://github.com/haifangong/TRFE-Net-for-thyroid-nodule-segmentation/tree/main/picture) link and store it inside the `/results/`. </br>
 
 ## Acknowledgement
 Thanks to [Vim](https://github.com/hustvl/Vim), [VMamba](https://github.com/MzeroMiko/VMamba), [VM-UNet](https://github.com/JCruan519/VM-UNet) and [LightM-UNet](https://github.com/MrBlankness/LightM-UNet) for their outstanding work.
