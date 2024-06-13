@@ -6,7 +6,6 @@ from loader import *
 
 from models.LightMUNet import LightMUNet
 from models.VMUNet.vmunet import VMUNet
-from models.VM_UNet import VM_UNet
 from models.HNet import H_Net_137
 from models.HMamba.MHNet import H_Net
 from models.MDNet.DMNet import DMNet
@@ -90,13 +89,6 @@ def main(config):
                                depths_decoder=model_cfg['depths_decoder'],
                                drop_path_rate=model_cfg['drop_path_rate'],
                                load_ckpt_path=model_cfg['load_ckpt_path'],)
-        elif model_name == 'VM_UNet':
-            model_cfg = config.model_config
-            model = VM_UNet(num_classes=model_cfg['num_classes'], 
-                               input_channels=model_cfg['input_channels'], 
-                               c_list=model_cfg['c_list'], 
-                               split_att=model_cfg['split_att'], 
-                               bridge=model_cfg['bridge'],)
         elif model_name == 'LightMUNet':
             model = LightMUNet(out_channels=2, in_channels=model_cfg['input_channels'], init_filters=32)
         elif model_name == 'fcn':
