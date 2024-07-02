@@ -150,11 +150,11 @@ def dataset_normalized(imgs):
 
 
 ## Temporary
-class isic_loader(Dataset):
+class tn3k_loader(Dataset):
     """ dataset class for Brats datasets
     """
     def __init__(self, path_Data, train = True, Test = False):
-        super(isic_loader, self)
+        super(tn3k_loader, self)
         self.train = train
         if train:   
           self.data   = np.load(path_Data+'data_train.npy')          
