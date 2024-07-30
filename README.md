@@ -30,11 +30,11 @@ pip install pillow
 ```
 
 *A. TN3K* </br>
-1. Download the TN3K train dataset from [this](https://github.com/haifangong/TRFE-Net-for-thyroid-nodule-segmentation/tree/main/picture) link and extract both training dataset and ground truth folders inside the `/TNUI-2021-/TN3K/`. </br>
+1. Download the TN3K train dataset from [this](https://github.com/haifangong/TRFE-Net-for-thyroid-nodule-segmentation/tree/main/picture) link and extract both training dataset and ground truth folders inside the `/dataprepare/TN3K/`. </br>
 2. Run `Prepare_TN3K.py` for data preparation and dividing data to train, validation and test sets. </br>
 
 *B. TNUI* </br>
-1. Download the TNUI train dataset from [this](https://github.com/zxg3017/TNUI-2021-) link and extract both training dataset and ground truth folders inside the `/TNUI-2021-/TNUI-2021-/`. </br>
+1. Download the TNUI train dataset from [this](https://github.com/zxg3017/TNUI-2021-) link and extract both training dataset and ground truth folders inside the `/dataprepare/TNUI-2021-/`. </br>
 2. Run `Prepare_TNUI.py` for data preparation and dividing data to train, validation and test sets. </br>
 
 
